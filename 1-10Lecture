@@ -1,0 +1,416 @@
+자료구조와 알고리즘 1-10강
+
+1강.
+이 강의는 풀어야 하는 문제에 따른 필요한 자료구조의 파악을 위한 강의이다!
+> 문제를 마주했을 떄
+
+
+2강.
+선형배열에서 append와 pop은 맨 끝에의 것을 뺴거나 더하므로 상수시간만을 소모함
+다만, 삽입과 삭제는 n이 커질때마다 더 커지는 연산을 가진다
+
+실습문제1 - 다른사람 풀이- 홍지혁
+——
+def solution(L, x):
+    answer = L
+    ind=0
+    for i in range(len(L)):
+        if L[i]<x:
+            ind +=1
+    answer.insert(ind,x)
+    return answer
+——
+
+실습문제2 - 내풀이
+——
+
+슬라이싱 했을 때 참조형인지 확인해보기 슬라이싱한 거 바꾸면 다른것도 바뀌는 지 확인하기
+
+def solution(L, x):
+    answer = []
+    i=0
+    if x in L:
+        while x in L[i:]:
+            k=L.index(x,i)
+            answer.append(k)
+            i=k+1
+    else:
+        answer.append(-1)
+    return answer
+——
+
+
+
+3강.
+sort와 람다 >> 람다는 lambda x : x[1] >> x[1] 을 반환한다
+이진탐색은 정말 효율적 이지만 정렬이 반드시 되어있어야 한다!
+
+본래는 정렬에서 알파벳은 항상 대문자가 우선하지만, 대소문자를 구별하지않고 알파벳의 순서로만 구현하는 방법은?
+M=["atom","String", "int", "block", "Can"]
+M.sort(key=lambda x: x.upper())
+print(M)
+ㄴ> 내가 직접 짠 코드 : 대문자의 크기로 비교하라!
+
+실습문제1 - 내풀이
+——
+def solution(L, x):
+    leng=len(L)
+    lower=0
+    upper=leng-1
+    idx=-1
+    i=0
+    
+    while 1:
+        if 2**i >= leng: #리스트 1개 일 떄 i=0
+            break    
+        i=i+1
+        
+    
+    if i:
+        while lower <= upper:
+            i=i-1 #리스트 1개 일 때 오류?
+            mid = (lower+upper)//2
+            if L[mid]==x:
+                answer = mid
+                return answer
+            elif i==0:
+                answer=idx
+                return answer
+            elif L[mid] < x:
+                lower=mid+1
+            elif L[mid] > x:
+                upper=mid
+            
+                
+    else: #리스트 1개일 떄
+        answer=L[0]
+        return answer
+——
+
+—— 내풀이 2 >>> 중간에 브레이크는 좀 마음에 들지 않음
+Low/up은 M을 기준으로 위 아래로 가는거라 누락은 없고,
+특이사항이 있다면 Low/UP이 x와 겹쳐있는 정도?
+
+def solution(L, x):
+    answer = -1
+    low=0
+    up=len(L)-1
+    
+    while low <= up:
+        mid=(low+up)//2
+        if L[mid] == x:
+            answer=mid
+            break
+        elif L[mid] > x:
+            up=mid-1
+        elif L[mid] < x:
+            low=mid+1
+        
+    return answer
+
+4/5강.
+재귀 알고리즘
+ㄴ> 생각하기에는 편하지만 효율적인 측면이 강한 알고리즘은 아니다
+
+——반복문을 통한 내 풀이
+
+def solution(x):
+    n2 = 0
+    n1 = 1
+    if x<=1:
+        answer=x
+    else:
+        for i in range(1,x):
+            n=n1+n2
+            n2=n1
+            n1=n
+            answer=n
+    
+    return answer
+
+
+**17강 트리에서 등장하는 재귀적 알고리즘과 반복적 알고리즘간의 차이를 느껴보기
+무엇이 더 효율적인가? 에 대하여
+
+***하노이의 탑 문제 해결할 때, 재귀랑 반복문 둘 다를 이용해서 풀어볼 것
+재귀 호출이 40번 정도되면 그떄부턴 진짜 40초는 넘어감
+
+*** 배낭문제 그냥도 풀어보고 다이내믹프로그래밍으로 풀어도 보기
+
+7강. 연결리스트
+선형배열과의 차이, 언제 쓸 것인지 구분하는 능력이 필요하다
+
+찾는 것 보다는 삽입과 삭제가 자주 이루어지는 경우에는 연결리스트가 더 유리
+
+리스트 참조라는  getAt()함수 직접 구현해보기
+리스트 순회를 구현할 때는 배열의 순회처럼 반복문으로 하나씩 getAt()을 호출하면 안된다.
+ getAt()에서는 호출될 때 마다 head에서부터 찾는거로 초기화 되어있기 때문 >>> .next 를 통해 가능하다
+
+1회차 풀이 —— 2회차도 동일함
+    def traverse(self):
+        arr=[]
+        node=self.head
+        while node:
+            arr.append(node.data)
+            node=node.next
+        return arr
+
+
+8강. 연결리스트의 삽입
+insertAt()의 삽입과 tail을 이용한 것으로 인해 바뀌는 것까지 구현해보기
+
+연결리스트를 합치기
+
+내가 구현한 Version1 insertAt():
+——
+    def insertAt(self,pos,newNode):
+        if pos < 1 or pos > self.nodeCount+1:
+            return False
+        #첫 list일 때
+        if pos==1:
+            newNode.next = self.head
+            self.head=newNode
+        else:
+            prev=self.getAt(pos-1)
+            newNode.next = prev.next
+            prev.next=newNode
+
+        if pos==self.nodeCount+1:
+            self.tail=newNode
+        
+        self.nodeCount+=1
+
+        return True
+
+——
+Version2
+    def insertAt(self,pos,newNode):
+        if pos < 1 or pos > self.nodeCount+1:
+            return False
+        #첫 list일 때
+        if pos==1:
+            newNode.next = self.head
+            self.head=newNode
+        else:
+            if pos==self.nodeCount+1:
+                prev=self.tail
+            else:
+                prev=self.getAt(pos-1)
+            newNode.next = prev.next
+            prev.next=newNode
+
+        if pos==self.nodeCount+1:
+            self.tail=newNode
+        
+        self.nodeCount+=1
+
+        return True
+
+——
+실습문제 popAt()
+—— 1회 수강 시의 코드
+
+def popAt(self, pos):
+        if pos < 1 or pos > self.nodeCount:
+            raise IndexError
+        
+        if pos==1:
+            curr=self.head
+            self.head=curr.next
+        else:
+            prev=self.getAt(pos-1)    
+            curr=prev.next
+            prev.next=curr.next
+        
+        if pos==self.nodeCount:
+            if self.nodeCount==1:
+                self.tail=None
+            else:
+                self.tail=prev
+    
+        self.nodeCount=self.nodeCount-1
+        return curr.data
+
+
+
+——2회 수강 후 코드
+    def popAt(self, pos):
+        if pos < 1 or pos>self.nodeCount:
+            return False
+        
+        if pos==1:
+            curr=self.head
+            self.head=curr.next
+            if pos==self.nodeCount:
+                self.tail=None
+        else:
+            prev=self.getAt(pos-1)
+            curr=prev.next
+            prev.next=curr.next
+            if pos==self.nodeCount:
+                self.tail=prev
+                
+        self.nodeCount-=1
+        return curr.data
+
+연결리스트 > 더미노드를 가진 연결리스트 > 더미&&양방향 연결리스트
+
+순회Travels , insertAt()구현, insertAfter()구현
+
+
+9강. 더미노드를 가진 연결리스트
+—— 실습 1회 차 내 코드
+    def popAfter(self, prev):
+        if self.nodeCount==1:
+            self.tail=None
+        elif prev.next.next is None:
+            self.tail=prev
+        curr=prev.next
+        prev.next=prev.next.next
+        self.nodeCount-=1
+        return curr.data
+    
+    def popAt(self, pos):
+        if pos < 1 or pos > self.nodeCount or self.nodeCount==0:
+            raise IndexError
+        prev=self.getAt(pos-1)
+        curr=self.popAfter(prev)
+        return curr
+
+실습 2회 차 내 코드 >> 이 코드에서 nodeCount를 줄이는 걸 popAfter로 옮겼더니 패스했음
+    def popAfter(self, prev):
+        curr=prev.next
+        prev.next=curr.next
+        return curr.data
+    
+    def popAt(self, pos):
+        if pos < 1 or pos > self.nodeCount or self.nodeCount < 1:
+            raise IndexError
+            
+        prev=self.getAt(pos-1)
+        curr=self.popAfter(prev)
+    
+        if pos==self.nodeCount:
+            if pos!=1:
+                self.tail=prev
+            elif pos==1:
+                self.tail=None
+
+        self.nodeCount -= 1
+        
+        return curr
+
+10강. 양방향 연결리스트
+
+> 연결리스트는 삽입과 삭제가 빈번할 경우에 유용한 구조
+>> 확실히 스택과 큐에서 쓰일텐데 문제는 스택하고 큐에서는 맨 끝을 타겟으로 하기 때문에 연결리스트의 이득이 별로 보이지는 않는다 그냥 배열을 이용해서 처리해도 문제없어보임
+이 의문은 언제 해결될 것인가
+
+10-1 . 실습 1회 내 코드 == 2회 실습코드와 동일
+    def. reverse(self):
+        answer=[]
+        curr=self.tail
+        while curr.prev.prev:
+            curr=curr.prev
+            answer.append(curr.data)
+        return answer
+
+10-2. 실습 1회 내 코드 == 2회 실습 코드와 동일함
+def insertBefore(self, next, newNode):
+        
+        prev=next.prev
+        newNode.next=next
+        newNode.prev=prev
+        prev.next=newNode
+        next.prev=newNode
+        
+        self.nodeCount=self.nodeCount+1
+        return True
+
+10-3. 실습 1회 내 코드
+    def popAfter(self, prev):
+        if prev.next==self.tail or prev==self.tail:
+            return True
+        next=prev.next
+        prev.next=next.next
+        next.next.prev=prev
+        self.nodeCount=self.nodeCount-1
+        return next.data
+
+
+    def popBefore(self, next):
+        if next==self.head or next.prev==self.head:
+            return True
+        prev=next.prev
+        next.prev=prev.prev
+        prev.prev.next=next
+        self.nodeCount=self.nodeCount-1
+        return prev.data
+
+
+    def popAt(self, pos):
+        if pos < 1 or pos > self.nodeCount :
+            raise IndexError
+        
+        
+        prev=self.getAt(pos-1)
+        return self.popAfter(prev)
+
+
+
+실습 2회 내 코드 중 popAt의 변경 (popBefore을 사용하는 방식)
+    def popAt(self, pos):
+        if pos < 1 or pos > self.nodeCount:
+            raise IndexError
+        
+        if pos==self.nodeCount:
+            next=self.tail    
+        else:
+            next=self.getAt(pos+1)
+        answer = self.popBefore(next)
+        return answer
+
+맨 끝을 뺄 때는 주어진 getAt에서는 tail을 받아들이지 않는 조건을 가지지 않고 있으므로 popAt에서 따로 분기를 해줘야만 한다
+ 
+
+10-4.
+
+실습 1회 작성 코드
+    def concat(self, L):
+        if L.nodeCount==0:
+            self.tail.prev.next=L.tail
+            L.tail.prev=self.tail.prev
+            
+        elif self.nodeCount==0:
+            self.head.next=L.head.next
+            L.head.next.prev=self.head
+            self.nodeCount=L.nodeCount
+        
+        else:
+            last=self.tail.prev
+            last.next=L.head.next
+            L.head.next.prev=last
+            self.nodeCount=self.nodeCount+L.nodeCount
+        self.tail=L.tail
+
+실습 2회 작성코드
+    def concat(self, L):
+        if self.nodeCount!=0:
+            self.tail.prev.next=L.head.next
+            L.head.next.prev=self.tail.prev
+        else:
+            if L.nodeCount !=0:
+                self.head.next=L.head.next
+                L.head.next.prev=self.tail.prev
+            else:
+                self.tail.prev.next=L.head.next
+                L.head.next.prev=self.tail.prev
+        self.tail=L.tail
+        self.nodeCount=self.nodeCount+L.nodeCount
+        return True
+
+케이스는 잘 따졌는데, 양방향인걸 깜빡했다...
+
+
+문자열로 들어온다는 건 항상 조심해야함...
+인덱싱으로 대체할 수 없기 때문
